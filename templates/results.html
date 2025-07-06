@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Results - Code Project Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .file-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        .file-item.success {
+            border-left-color: #28a745;
+        }
+        .file-item.error {
+            border-left-color: #dc3545;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+        .metric-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 5px;
+            display: inline-block;
+        }
+        .status-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        .status-icon.success {
+            color: #28a745;
+        }
+        .status-icon.error {
+            color: #dc3545;
+        }
+        .status-icon.warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-5 fw-bold text-primary mb-3">
+                            <i class="fas fa-chart-line me-3"></i>Conversion Results
+                        </h1>
+                        <a href="/" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Converter
+                        </a>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="result-card">
+                        <h4><i class="fas fa-info-circle me-2"></i>Conversion Summary</h4>
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="metric-badge">
+                                    <i class="fas fa-file-code me-2"></i>
+                                    {{ results.files_converted|length }} Files Converted
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-badge">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {{ results.errors|length }} Errors
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-badge">
+                                    <i class="fas fa-brain me-2"></i>
+                                    AI: {{ "Yes" if results.ai_used else "No" }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-badge">
+                                    <i class="fas fa-exchange-alt me-2"></i>
+                                    {{ results.conversion_type.replace('_', ' → ').title() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Details -->
+                    <div class="result-card">
+                        <h4><i class="fas fa-folder-open me-2"></i>Converted Files</h4>
+                        {% if results.files_converted %}
+                            {% for file in results.files_converted %}
+                                <div class="file-item {% if file.status == 'success' %}success{% else %}error{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-file-code status-icon {% if file.status == 'success' %}success{% else %}error{% endif %}"></i>
+                                            <strong>{{ file.source }}</strong>
+                                            <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                            <strong>{{ file.target }}</strong>
+                                        </div>
+                                        <span class="badge {% if file.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ file.status.title() }}
+                                        </span>
+                                    </div>
+                                    {% if file.warnings %}
+                                        <div class="mt-2">
+                                            <small class="text-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                Warnings: {{ file.warnings|length }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-folder-open fa-3x mb-3"></i>
+                                <p>No files were converted</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Errors -->
+                    {% if results.errors %}
+                        <div class="result-card">
+                            <h4><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Errors</h4>
+                            {% for error in results.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>{{ error.file }}:</strong> {{ error.error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Warnings -->
+                    {% if results.warnings %}
+                        <div class="result-card">
+                            <h4><i class="fas fa-exclamation-circle me-2 text-warning"></i>Warnings</h4>
+                            {% for warning in results.warnings %}
+                                <div class="alert alert-warning">
+                                    {{ warning }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="result-card">
+                        <h4><i class="fas fa-download me-2"></i>Download Converted Project</h4>
+                        <p class="text-muted">Download the complete converted project as a ZIP file.</p>
+                        <div class="d-flex gap-3">
+                            <a href="/download/{{ session_id }}" class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i>Download ZIP
+                            </a>
+                            <button class="btn btn-outline-secondary" onclick="showProjectStructure()">
+                                <i class="fas fa-folder-tree me-2"></i>View Structure
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Project Structure Modal -->
+                    <div class="modal fade" id="structureModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Project Structure</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="projectStructure">
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Details -->
+                    <div class="result-card">
+                        <h4><i class="fas fa-cogs me-2"></i>Conversion Details</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Source Directory:</strong></p>
+                                <code class="bg-light p-2 rounded d-block">{{ results.source_dir }}</code>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Target Directory:</strong></p>
+                                <code class="bg-light p-2 rounded d-block">{{ results.target_dir }}</code>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <p><strong>Conversion Type:</strong> {{ results.conversion_type.replace('_', ' → ').title() }}</p>
+                            <p><strong>AI Enhancement:</strong> {{ "Enabled" if results.ai_used else "Disabled" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="result-card">
+                        <h4><i class="fas fa-lightbulb me-2"></i>Next Steps</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-check-circle text-success me-2"></i>What to do now:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-download me-2"></i>Download the converted project</li>
+                                    <li><i class="fas fa-eye me-2"></i>Review the converted code</li>
+                                    <li><i class="fas fa-play me-2"></i>Test the converted project</li>
+                                    <li><i class="fas fa-edit me-2"></i>Make manual adjustments if needed</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Important notes:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-info-circle me-2"></i>This is an automated conversion</li>
+                                    <li><i class="fas fa-code me-2"></i>Manual review is recommended</li>
+                                    <li><i class="fas fa-bug me-2"></i>Test thoroughly before production use</li>
+                                    <li><i class="fas fa-shield-alt me-2"></i>Check for security implications</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Detailed Guidance -->
+                        <div class="mt-4">
+                            <div class="accordion" id="nextStepsAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="reviewHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reviewCollapse">
+                                            <i class="fas fa-eye me-2"></i>How to Review Converted Code
+                                        </button>
+                                    </h2>
+                                    <div id="reviewCollapse" class="accordion-collapse collapse" data-bs-parent="#nextStepsAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>Check for syntax errors in the target language</li>
+                                                <li>Verify that all functions and logic are preserved</li>
+                                                <li>Review variable names and data types</li>
+                                                <li>Ensure proper error handling and exceptions</li>
+                                                <li>Check for language-specific best practices</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="testHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#testCollapse">
+                                            <i class="fas fa-play me-2"></i>How to Test Converted Project
+                                        </button>
+                                    </h2>
+                                    <div id="testCollapse" class="accordion-collapse collapse" data-bs-parent="#nextStepsAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>Run the converted code with sample inputs</li>
+                                                <li>Compare output with the original program</li>
+                                                <li>Test edge cases and error conditions</li>
+                                                <li>Check for memory leaks or performance issues</li>
+                                                <li>Verify all dependencies are properly included</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="securityHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#securityCollapse">
+                                            <i class="fas fa-shield-alt me-2"></i>Security Considerations
+                                        </button>
+                                    </h2>
+                                    <div id="securityCollapse" class="accordion-collapse collapse" data-bs-parent="#nextStepsAccordion">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li>Review input validation and sanitization</li>
+                                                <li>Check for potential injection vulnerabilities</li>
+                                                <li>Verify secure handling of sensitive data</li>
+                                                <li>Ensure proper authentication and authorization</li>
+                                                <li>Review file and network access permissions</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enterprise Insights (Phase 2) -->
+                    {% if results.phase2 %}
+                    <div class="result-card">
+                        <h4><i class="fas fa-building me-2"></i>Enterprise Insights (Phase 2)</h4>
+                        <div class="accordion" id="phase2Accordion">
+                            <!-- Code Analysis -->
+                            {% if results.phase2.code_analysis %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="codeAnalysisHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#codeAnalysisCollapse">
+                                        <i class="fas fa-search me-2"></i>Code Analysis & Recommendations
+                                    </button>
+                                </h2>
+                                <div id="codeAnalysisCollapse" class="accordion-collapse collapse" data-bs-parent="#phase2Accordion">
+                                    <div class="accordion-body">
+                                        <strong>Source Project:</strong>
+                                        <ul>
+                                            <li>Files analyzed: {{ results.phase2.code_analysis.source_analysis.files|length }}</li>
+                                            <li>Total complexity: {{ results.phase2.code_analysis.source_analysis.total_complexity }}</li>
+                                            <li>Common patterns: {{ results.phase2.code_analysis.source_analysis.common_patterns|length }}</li>
+                                        </ul>
+                                        <strong>Target Project:</strong>
+                                        <ul>
+                                            <li>Files analyzed: {{ results.phase2.code_analysis.target_analysis.files|length }}</li>
+                                            <li>Total complexity: {{ results.phase2.code_analysis.target_analysis.total_complexity }}</li>
+                                            <li>Common patterns: {{ results.phase2.code_analysis.target_analysis.common_patterns|length }}</li>
+                                        </ul>
+                                        <strong>Recommendations:</strong>
+                                        <ul>
+                                            {% for rec in results.phase2.code_analysis.recommendations %}
+                                            <li>{{ rec }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!-- Security Scanning -->
+                            {% if results.phase2.security %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="securityHeading2">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#securityCollapse2">
+                                        <i class="fas fa-shield-alt me-2"></i>Security Scanning
+                                    </button>
+                                </h2>
+                                <div id="securityCollapse2" class="accordion-collapse collapse" data-bs-parent="#phase2Accordion">
+                                    <div class="accordion-body">
+                                        <strong>Source Vulnerabilities:</strong> {{ results.phase2.security.source_security.total_vulnerabilities }}<br>
+                                        <strong>Target Vulnerabilities:</strong> {{ results.phase2.security.target_security.total_vulnerabilities }}<br>
+                                        <strong>Improvements:</strong>
+                                        <ul>
+                                            {% for imp in results.phase2.security.security_improvements %}
+                                            <li>{{ imp }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!-- Test Generation -->
+                            {% if results.phase2.testing %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="testingHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#testingCollapse">
+                                        <i class="fas fa-vial me-2"></i>Automated Testing & QA
+                                    </button>
+                                </h2>
+                                <div id="testingCollapse" class="accordion-collapse collapse" data-bs-parent="#phase2Accordion">
+                                    <div class="accordion-body">
+                                        <strong>Total tests generated:</strong> {{ results.phase2.testing.total_tests_generated }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!-- Performance Benchmarking -->
+                            {% if results.phase2.performance %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="performanceHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#performanceCollapse">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Performance Benchmarking
+                                    </button>
+                                </h2>
+                                <div id="performanceCollapse" class="accordion-collapse collapse" data-bs-parent="#phase2Accordion">
+                                    <div class="accordion-body">
+                                        <strong>Average performance change:</strong> {{ results.phase2.performance.average_performance_change }}%
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <!-- Analytics -->
+                            {% if results.phase2.analytics %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="analyticsHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsCollapse">
+                                        <i class="fas fa-chart-bar me-2"></i>Analytics & Reporting
+                                    </button>
+                                </h2>
+                                <div id="analyticsCollapse" class="accordion-collapse collapse" data-bs-parent="#phase2Accordion">
+                                    <div class="accordion-body">
+                                        <strong>Conversion ID:</strong> {{ results.phase2.analytics.conversion_id }}<br>
+                                        <strong>Metrics recorded:</strong> {{ results.phase2.analytics.metrics_recorded }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showProjectStructure() {
+            const modal = new bootstrap.Modal(document.getElementById('structureModal'));
+            modal.show();
+            
+            // Load project structure (this would be implemented with an API call)
+            document.getElementById('projectStructure').innerHTML = `
+                <div class="text-muted">
+                    <p><i class="fas fa-folder me-2"></i>converted_project/</p>
+                    <div class="ms-4">
+                        <p><i class="fas fa-file-code me-2"></i>main.py</p>
+                        <p><i class="fas fa-file-code me-2"></i>utils.py</p>
+                        <p><i class="fas fa-file-text me-2"></i>requirements.txt</p>
+                        <p><i class="fas fa-file-text me-2"></i>README.md</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html> 

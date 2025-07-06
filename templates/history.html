@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation History - CodeTransEval</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-left h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #3498db, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .history-header h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .translation-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .language-badge {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .translation-time {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .code-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .code-section {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .code-section h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .validation-status {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-valid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-invalid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .execution-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-history i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .no-history h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+
+            .history-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .code-preview {
+                grid-template-columns: 1fr;
+            }
+
+            .translation-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-history"></i> Translation History</h1>
+                <p>Your past code translations and results</p>
+            </div>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="history-header">
+                <h2><i class="fas fa-clock"></i> Recent Translations</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="number" id="total-translations">0</div>
+                        <div class="label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="avg-time">0s</div>
+                        <div class="label">Avg Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="history-content">
+                <!-- History items will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+        });
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/history');
+                if (response.ok) {
+                    const translations = await response.json();
+                    displayHistory(translations);
+                } else {
+                    showNoHistory();
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                showNoHistory();
+            }
+        }
+
+        function displayHistory(translations) {
+            const content = document.getElementById('history-content');
+            const totalTranslations = document.getElementById('total-translations');
+            const avgTime = document.getElementById('avg-time');
+
+            if (translations.length === 0) {
+                showNoHistory();
+                return;
+            }
+
+            // Update stats
+            totalTranslations.textContent = translations.length;
+            
+            const totalTime = translations.reduce((sum, t) => sum + t.translation_time, 0);
+            const averageTime = (totalTime / translations.length).toFixed(1);
+            avgTime.textContent = averageTime + 's';
+
+            // Display translations
+            content.innerHTML = translations.map(translation => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div class="translation-info">
+                            <span class="language-badge">${translation.source_lang}</span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="language-badge">${translation.target_lang}</span>
+                            <span class="translation-time">${translation.translation_time}s</span>
+                        </div>
+                        <div class="timestamp">
+                            ${new Date(translation.created_at).toLocaleString()}
+                        </div>
+                    </div>
+                    
+                    <div class="code-preview">
+                        <div class="code-section">
+                            <h4>Source Code (${translation.source_lang})</h4>
+                            <pre>${escapeHtml(translation.source_code)}</pre>
+                        </div>
+                        <div class="code-section">
+                            <h4>Translated Code (${translation.target_lang})</h4>
+                            <pre>${escapeHtml(translation.translated_code)}</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="validation-status">
+                        <span class="status-badge ${translation.syntax_valid ? 'status-valid' : 'status-invalid'}">
+                            <i class="fas ${translation.syntax_valid ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                            Syntax: ${translation.syntax_valid ? 'Valid' : 'Invalid'}
+                        </span>
+                        ${translation.execution_result ? `
+                            <span class="status-badge status-valid">
+                                <i class="fas fa-play-circle"></i>
+                                Executed
+                            </span>
+                        ` : ''}
+                    </div>
+                    
+                    ${translation.execution_result ? `
+                        <div class="execution-result">
+                            <strong>Execution Output:</strong><br>
+                            ${escapeHtml(translation.execution_result)}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function showNoHistory() {
+            const content = document.getElementById('history-content');
+            content.innerHTML = `
+                <div class="no-history">
+                    <i class="fas fa-history"></i>
+                    <h3>No translations yet</h3>
+                    <p>Start translating some code to see your history here!</p>
+                    <br>
+                    <a href="/" class="btn">
+                        <i class="fas fa-magic"></i> Start Translating
+                    </a>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html> 
