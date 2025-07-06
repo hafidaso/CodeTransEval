@@ -1,0 +1,23 @@
+{
+    "gemma3n": {
+        "enabled": true,
+        "model_name": "gemma-3n-2b",
+        "use_kaggle": true,
+        "local_model_path": null,
+        "max_tokens": 512,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "fallback_to_basic": true
+    },
+    "kaggle": {
+        "api_key_required": true,
+        "model_acceptance_required": true,
+        "model_url": "https://www.kaggle.com/models/google/gemma-3n"
+    },
+    "conversion": {
+        "ai_priority": true,
+        "basic_fallback": true,
+        "preserve_comments": true,
+        "generate_docs": true
+    }
+}
